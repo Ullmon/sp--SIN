@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mobile Platformer Game</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background-color: lightblue;
+    }
+    canvas {
+      display: block;
+      background-color: lightblue;
+    }
+    .controls {
+      display: flex;
+      justify-content: center;
+      margin-top: 10px;
+    }
+    .button {
+      width: 60px;
+      height: 60px;
+      background-color: gray;
+      color: white;
+      font-size: 18px;
+      font-weight: bold;
+      text-align: center;
+      line-height: 60px;
+      margin: 0 10px;
+      border-radius: 10px;
+      user-select: none;
+      touch-action: none;
+    }
+    .button:active {
+      background-color: darkgray;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="gameCanvas"></canvas>
+  <div class="controls">
+    <div class="button" id="left">←</div>
+    <div class="button" id="up">↑</div>
+    <div class="button" id="right">→</div>
+  </div>
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    canvas.width = window.innerWidth - 20;
+    canvas.height = 400;
+
+    const player = {
+      x: 50,
+      y: 250,
+      width: 30,
+      height: 30,
+      color: 'red',
+      speed: 7,
+      dy: 0,
+      gravity: 0.5,
+      jumpForce: 100,
+      onGround: false,
+    };
+
+    const platforms = [
+      { x: 0, y: 350, width: canvas.width, height: 20, color: 'green' },
+      { x: 200, y: 250, width: 100, height: 20, color: 'green' },
+      { x: 400, y: 200, width: 100, height: 20, color: 'green' },
+    ];
+
+    const keys = {
+      left: false,
+      right: false,
+      up: false,
+    };
+
+    // Touch event listeners for buttons
+    const leftButton = document.getElementById('left');
+    const rightButton = document.getElementById('right');
+    const upButton = document.getElementById('up');
+
+    leftButton.addEventListener('touchstart', () => keys.left = true);
+    leftButton.addEventListener('touchend', () => keys.left = false);
+
+    rightButton.addEventListener('touchstart', () => keys.right = true);
+    rightButton.addEventListener('touchend', () => keys.right = false);
+
+    upButton.addEventListener('touchstart', () => keys.up = true);
+    upButton.addEventListener('touchend', () => keys.up = false);
+
+    // Update game logic
+    function update() {
+      // Horizontal movement
+      if (keys.left) player.x -= player.speed;
+      if (keys.right) player.x += player.speed;
+
+      // Apply gravity
+      player.dy += player.gravity;
+      player.y += player.dy;
+
+      // Collision detection
+      player.onGround = false;
+      for (const platform of platforms) {
+        if (
+          player.x < platform.x + platform.width &&
+          player.x + player.width > platform.x &&
+          player.y + player.height <= platform.y &&
+          player.y + player.height + player.dy >= platform.y
+        ) {
+          player.onGround = true;
+          player.dy = -0.5;
+          player.y = platform.y - player.height;
+        }
+      }
+
+      // Jumping
+      if (keys.up && player.onGround) {
+        player.dy = player.jumpForce = 1;
+      }
+
+      // Keep player within canvas
+      if (player.x < 0) player.x = 1;
+      if (player.x + player.width > canvas.width) player.x = canvas.width - player.width;
+      if (player.y > canvas.height) player.y = canvas.height - player.height;
+
+      draw();
+      requestAnimationFrame(update);
+    }
+
+    // Draw game elements
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Draw platforms
+      platforms.forEach((platform) => {
+        ctx.fillStyle = platform.color;
+        ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+      });
+
+      // Draw player
+      ctx.fillStyle = player.color;
+      ctx.fillRect(player.x, player.y, player.width, player.height);
+    }
+
+    update();
+  </script>
+</body>
+</html>
