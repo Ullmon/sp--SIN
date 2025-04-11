@@ -121,7 +121,8 @@
 
       // Jumping
       if (keys.up && player.onGround) {
-        player.dy = player.jumpForce = 1;
+  player.dy = -player.jumpForce; // Apply the negative jump force to move the player upward
+}
       }
 
       // Keep player within canvas
